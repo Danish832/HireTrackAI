@@ -100,6 +100,7 @@ const refreshAccessToken = async (req, res, next) => {
       res.status(401);
       throw new Error('User no longer exists');
     }
+    user.pruneExpiredTokens();
 
     const tokenExists = user.refreshTokens.some((rt) => rt.token === token);
     if (!tokenExists) {

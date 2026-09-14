@@ -21,9 +21,14 @@ const protect = async (req, res, next) => {
     req.user = user;
     next();
   } catch (error) {
-    res.status(401);
-    next(new Error('Not authorized, token invalid or expired'));
+  res.status(401);
+  if (error.name === 'TokenExpiredError') {
+    next(new Error('Access token expired'));
+  } else {
+    next(new Error('Not authorized, token invalid'));
   }
-};
+}
+
+}
 
 module.exports = { protect };

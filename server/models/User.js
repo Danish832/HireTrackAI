@@ -72,4 +72,12 @@ userSchema.methods.toSafeObject = function () {
   };
 };
 
+// Remove expired refresh tokens whenever they're checked
+userSchema.methods.pruneExpiredTokens = function () {
+  const now = new Date();
+  this.refreshTokens = this.refreshTokens.filter(
+    (rt) => rt.expiresAt > now
+  );
+};
+
 module.exports = mongoose.model('User', userSchema);
