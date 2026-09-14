@@ -5,6 +5,8 @@ const cookieParser = require('cookie-parser');
 const connectDB = require('./config/db');
 const { notFound, errorHandler } = require('./middleware/errorHandler');
 const healthRoutes = require('./routes/healthRoutes');
+const authRoutes = require('./routes/authRoutes');
+
 
 dotenv.config();
 connectDB();
@@ -24,6 +26,7 @@ app.use(
 
 // Routes
 app.use('/api/health', healthRoutes);
+app.use('/api/auth', authRoutes);
 
 // Error handling (must be last)
 app.use(notFound);
