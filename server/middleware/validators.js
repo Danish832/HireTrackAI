@@ -1,4 +1,9 @@
 const { body, validationResult } = require('express-validator');
+const { APPLICATION_STATUSES } = require('../models/Application');
+
+
+
+
 
 const validate = (req, res, next) => {
   const errors = validationResult(req);
@@ -26,4 +31,21 @@ const loginValidation = [
   validate,
 ];
 
-module.exports = { registerValidation, loginValidation };
+const applicationValidation = [
+  body('company').trim().notEmpty().withMessage('Company is required'),
+  body('role').trim().notEmpty().withMessage('Role is required'),
+  body('status')
+    .optional()
+    .isIn(APPLICATION_STATUSES)
+    .withMessage(`Status must be one of: ${APPLICATION_STATUSES.join(', ')}`),
+  body('jobUrl').optional().isURL().withMessage('Job URL must be valid'),
+  validate,
+];
+
+
+module.exports = {
+  registerValidation,
+  loginValidation,
+  applicationValidation, // ← add this
+};
+
