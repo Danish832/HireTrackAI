@@ -6,7 +6,7 @@ const connectDB = require('./config/db');
 const { notFound, errorHandler } = require('./middleware/errorHandler');
 const healthRoutes = require('./routes/healthRoutes');
 const authRoutes = require('./routes/authRoutes');
-
+const applicationRoutes = require('./routes/applicationRoutes');
 
 dotenv.config();
 connectDB();
@@ -27,6 +27,7 @@ app.use(
 // Routes
 app.use('/api/health', healthRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/applications', applicationRoutes);
 
 // Error handling (must be last)
 app.use(notFound);
