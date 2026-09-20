@@ -9,7 +9,13 @@ const authRoutes = require('./routes/authRoutes');
 const applicationRoutes = require('./routes/applicationRoutes');
 const { apiLimiter } = require('./middleware/rateLimiter');
 const helmet = require('helmet');
-const mongoSanitize = require('express-mongo-sanitize');
+const sanitizeBody = require('./middleware/sanitize');
+const resumeRoutes = require('./routes/resumeRoutes');
+const path = require('path');
+// ...
+
+// Serve uploaded files (note: on Render free tier, disk is ephemeral — see note below)
+
 
 
 
@@ -23,13 +29,14 @@ app.use(helmet());
 app.use(express.json({ limit: '10kb' })); // prevent large payload attacks
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 app.use(cookieParser());
-app.use(mongoSanitize());
+app.use(sanitizeBody);
 app.use(
   cors({
     origin: process.env.CLIENT_URL,
     credentials: true,
   })
 );
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 
 
@@ -42,6 +49,8 @@ app.use('/api', apiLimiter);
 app.use('/api/health', healthRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/applications', applicationRoutes);
+app.use('/api/resume', resumeRoutes);
+
 
 
 // Error handling (must be last)
