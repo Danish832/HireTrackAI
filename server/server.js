@@ -50,6 +50,7 @@ app.use('/api/health', healthRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/applications', applicationRoutes);
 app.use('/api/resume', resumeRoutes);
+app.use('/api/test-llm', require('./routes/testLlmRoutes'));
 
 
 
