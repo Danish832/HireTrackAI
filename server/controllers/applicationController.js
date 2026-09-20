@@ -1,5 +1,7 @@
 const Application = require('../models/Application');
-
+const asyncHandler = require('../utils/asyncHandler');
+const User = require('../models/User');
+const { scoreJobMatch } = require('../services/matchScoringService');
 // @desc    Create a new application
 // @route   POST /api/applications
 const createApplication = async (req, res, next) => {
@@ -160,6 +162,52 @@ const getApplicationStats = async (req, res, next) => {
   }
 };
 
+
+// @desc    Generate AI match score for an application
+// @route   POST /api/applications/:id/match-score
+const generateMatchScore = asyncHandler(async (req, res) => {
+  const application = await Application.findOne({
+    _id: req.params.id,
+    user: req.user._id,
+  });
+
+  if (!application) {
+    res.status(404);
+    throw new Error('Application not found');
+  }
+
+  if (!application.jobDescription || application.jobDescription.trim().length < 20) {
+    res.status(400);
+    throw new Error('Add a job description to this application before scoring');
+  }
+
+  const user = await User.findById(req.user._id);
+  const structuredResume = user.parsedResume?.structuredData;
+
+  if (!structuredResume) {
+    res.status(400);
+    throw new Error('Upload and parse your resume before generating a match score');
+  }
+
+  const result = await scoreJobMatch(
+    structuredResume,
+    application.jobDescription,
+    application.role,
+    application.company
+  );
+
+  application.matchScore = result.matchScore;
+  application.matchReasoning = result.reasoning;
+  application.matchedSkills = result.matchedSkills;
+  application.missingSkills = result.missingSkills;
+  application.matchRecommendation = result.recommendation;
+  application.matchScoredAt = new Date();
+
+  await application.save();
+
+  res.status(200).json({ success: true, data: application });
+});
+
 module.exports = {
   createApplication,
   getApplications,
@@ -167,4 +215,5 @@ module.exports = {
   updateApplication,
   deleteApplication,
   getApplicationStats,
+  generateMatchScore, // ← add this export
 };

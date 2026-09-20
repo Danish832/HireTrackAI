@@ -78,6 +78,33 @@ const applicationSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    matchScore: {
+  type: Number,
+  min: 0,
+  max: 100,
+  default: null,
+},
+matchReasoning: {
+  type: String,
+  default: null,
+},
+matchedSkills: {
+  type: [String],
+  default: [],
+},
+missingSkills: {
+  type: [String],
+  default: [],
+},
+matchRecommendation: {
+  type: String,
+  enum: ['Strong Match', 'Good Match', 'Partial Match', 'Weak Match', null],
+  default: null,
+},
+matchScoredAt: {
+  type: Date,
+  default: null,
+},
     // Timeline of status changes — useful for dashboard analytics
     statusHistory: [
       {
