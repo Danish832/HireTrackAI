@@ -2,9 +2,10 @@ const path = require('path');
 const fs = require('fs');
 const User = require('../models/User');
 const { extractTextFromResume } = require('../utils/resumeParser');
+const { parseResumeWithAI } = require('../services/resumeAIService');
 const asyncHandler = require('../utils/asyncHandler');
 
-// @desc    Upload resume and extract raw text
+// @desc    Upload resume, extract text, and parse with AI
 // @route   POST /api/resume/upload
 const uploadResume = asyncHandler(async (req, res) => {
   if (!req.file) {
@@ -18,7 +19,6 @@ const uploadResume = asyncHandler(async (req, res) => {
   try {
     extractedText = await extractTextFromResume(filePath);
   } catch (error) {
-    // Clean up the uploaded file if parsing fails
     fs.unlink(filePath, () => {});
     res.status(422);
     throw new Error('Could not extract text from the uploaded file');
@@ -30,28 +30,62 @@ const uploadResume = asyncHandler(async (req, res) => {
     throw new Error('Resume appears empty or unreadable');
   }
 
-  // Delete old resume file if one exists, to avoid orphaned files
   const user = await User.findById(req.user._id);
+
+  // Delete old resume file if one exists
   if (user.resumeUrl) {
     const oldPath = path.join(__dirname, '..', 'uploads', 'resumes', path.basename(user.resumeUrl));
-    fs.unlink(oldPath, () => {}); // ignore errors if already gone
+    fs.unlink(oldPath, () => {});
   }
 
   user.resumeUrl = `/uploads/resumes/${req.file.filename}`;
+
+  // Attempt AI parsing — but don't fail the whole upload if AI parsing fails
+  let structuredData = null;
+  let aiParseError = null;
+  try {
+    structuredData = await parseResumeWithAI(extractedText);
+  } catch (error) {
+    aiParseError = error.message;
+    console.error('AI resume parsing failed:', error.message);
+  }
+
   user.parsedResume = {
     rawText: extractedText,
+    structuredData,
     uploadedAt: new Date(),
   };
   await user.save();
 
   res.status(200).json({
     success: true,
-    message: 'Resume uploaded and text extracted successfully',
+    message: aiParseError
+      ? 'Resume uploaded, but AI parsing failed — raw text saved'
+      : 'Resume uploaded and parsed successfully',
     data: {
       resumeUrl: user.resumeUrl,
-      textPreview: extractedText.substring(0, 300) + '...',
+      structuredData,
+      aiParseError,
     },
   });
+});
+
+// @desc    Re-run AI parsing on existing resume (without re-uploading)
+// @route   POST /api/resume/reparse
+const reparseResume = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user._id);
+
+  if (!user.parsedResume || !user.parsedResume.rawText) {
+    res.status(404);
+    throw new Error('No resume text found. Please upload a resume first.');
+  }
+
+  const structuredData = await parseResumeWithAI(user.parsedResume.rawText);
+
+  user.parsedResume.structuredData = structuredData;
+  await user.save();
+
+  res.status(200).json({ success: true, data: structuredData });
 });
 
 // @desc    Get current user's resume info
@@ -83,7 +117,7 @@ const deleteResume = asyncHandler(async (req, res) => {
   }
 
   const filePath = path.join(__dirname, '..', 'uploads', 'resumes', path.basename(user.resumeUrl));
-  fs.unlink(filePath, () => {}); // ignore errors if file already missing
+  fs.unlink(filePath, () => {});
 
   user.resumeUrl = null;
   user.parsedResume = null;
@@ -92,4 +126,4 @@ const deleteResume = asyncHandler(async (req, res) => {
   res.status(200).json({ success: true, message: 'Resume deleted' });
 });
 
-module.exports = { uploadResume, getResume, deleteResume };
+module.exports = { uploadResume, reparseResume, getResume, deleteResume };

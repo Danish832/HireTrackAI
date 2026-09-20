@@ -2,8 +2,10 @@ const express = require('express');
 const router = express.Router();
 const upload = require('../middleware/uploadMiddleware');
 const { protect } = require('../middleware/authMiddleware');
+const { aiLimiter } = require('../middleware/rateLimiter');
 const {
   uploadResume,
+  reparseResume,
   getResume,
   deleteResume,
 } = require('../controllers/resumeController');
@@ -22,7 +24,8 @@ const handleUpload = (req, res, next) => {
   });
 };
 
-router.post('/upload', handleUpload, uploadResume);
+router.post('/upload', aiLimiter, handleUpload, uploadResume);
+router.post('/reparse', aiLimiter, reparseResume);
 router.get('/', getResume);
 router.delete('/', deleteResume);
 

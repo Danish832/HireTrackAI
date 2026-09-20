@@ -39,3 +39,4 @@ server/uploads/*
 # Misc
 coverage/
 .env.*.local
+server/cookies.txt
