@@ -7,7 +7,7 @@ const asyncHandler = require('../utils/asyncHandler');
 router.get(
   '/',
   asyncHandler(async (req, res) => {
-    const text = await generateContent('Say hello in one short sentence.');
+    const text = await generateContent('Say hello in one sentence then tell a very short joke');
     res.status(200).json({ success: true, response: text });
   })
 );

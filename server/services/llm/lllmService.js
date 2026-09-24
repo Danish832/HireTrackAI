@@ -21,11 +21,32 @@ const getProvider = () => {
  * Generic entry point used by all controllers.
  * Swapping providers = changing LLM_PROVIDER in .env, nothing else.
  */
-const generateContent = async (prompt, options = {}) => {
+// const generateContent = async (prompt, options = {}) => {
+//   const provider = getProvider();
+//   return provider.generateContent(prompt, options);
+// };
+const generateContent = async (prompt, options = {}, retries = 3) => {
   const provider = getProvider();
-  return provider.generateContent(prompt, options);
-};
 
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      return await provider.generateContent(prompt, options);
+    } catch (error) {
+      const isRetryable =
+        error.message?.includes('503') ||
+        error.message?.includes('overloaded') ||
+        error.message?.includes('high demand');
+
+      if (isRetryable && attempt < retries) {
+        const delay = 1500 * Math.pow(2, attempt); // 1.5s, 3s, 6s
+        console.log(`Gemini overloaded, retrying in ${delay}ms (attempt ${attempt + 1}/${retries})...`);
+        await new Promise((resolve) => setTimeout(resolve, delay));
+        continue;
+      }
+      throw error;
+    }
+  }
+};
 /**
  * Helper: send a prompt expecting strict JSON back, and safely parse it.
  */

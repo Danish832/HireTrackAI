@@ -15,10 +15,17 @@ const uploadResume = asyncHandler(async (req, res) => {
 
   const filePath = req.file.path;
 
+  console.log('FILE:', req.file);
+console.log('FILE PATH:', filePath);
+console.log('FILE EXISTS:', fs.existsSync(filePath));
+
   let extractedText;
   try {
     extractedText = await extractTextFromResume(filePath);
   } catch (error) {
+     console.error('===== RESUME EXTRACTION ERROR =====');
+  console.error(error);
+  console.error('===================================');
     fs.unlink(filePath, () => {});
     res.status(422);
     throw new Error('Could not extract text from the uploaded file');
