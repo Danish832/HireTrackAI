@@ -5,6 +5,7 @@ import DashboardLayout from './layouts/DashboardLayout';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
+import ResumePage from './pages/ResumePage';
 
 function App() {
   return (
@@ -17,11 +18,11 @@ function App() {
           <Route element={<ProtectedRoute />}>
             <Route element={<DashboardLayout />}>
               <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/resume" element={<ResumePage />} />
             </Route>
           </Route>
 
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          
         </Routes>
       </AuthProvider>
     </BrowserRouter>

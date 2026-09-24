@@ -13,9 +13,17 @@ const DashboardLayout = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <nav className="bg-white shadow-sm px-6 py-4 flex items-center justify-between">
-        <Link to="/dashboard" className="text-xl font-bold text-blue-600">
-          HireTrack AI
-        </Link>
+        <div className="flex items-center gap-6">
+          <Link to="/dashboard" className="text-xl font-bold text-blue-600">
+            HireTrack AI
+          </Link>
+          <Link to="/dashboard" className="text-sm text-gray-600 hover:text-blue-600">
+            Applications
+          </Link>
+          <Link to="/resume" className="text-sm text-gray-600 hover:text-blue-600">
+            Resume
+          </Link>
+        </div>
         <div className="flex items-center gap-4">
           <span className="text-gray-600 text-sm">{user?.name}</span>
           <button
