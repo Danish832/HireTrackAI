@@ -21,7 +21,23 @@ An AI-powered full-stack MERN application for tracking job applications, parsing
 🚧 Under active development
 
 ## Setup Instructions
-_(Will be added as the project progresses)_
+## Setup Instructions
+
+### Backend
+\`\`\`bash
+cd server
+npm install
+cp .env.example .env   # fill in your own values
+npm run dev
+\`\`\`
+
+### Frontend
+\`\`\`bash
+cd client
+npm install
+cp .env.example .env
+npm run dev
+\`\`\`
 
 ## License
 MIT

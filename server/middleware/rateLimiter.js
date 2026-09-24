@@ -3,7 +3,7 @@ const rateLimit = require('express-rate-limit');
 // Strict limiter for login/register — brute-force protection
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 10,
+  max: 100,
   message: {
     success: false,
     message: 'Too many attempts. Please try again after 15 minutes.',
@@ -15,7 +15,7 @@ const authLimiter = rateLimit({
 // General limiter for all API routes
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 300, // 300 requests per IP per window
+  max: 500, // 300 requests per IP per window
   message: {
     success: false,
     message: 'Too many requests. Please slow down.',
