@@ -1,3 +1,4 @@
+import toast from 'react-hot-toast';
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -22,6 +23,7 @@ const Register = () => {
     try {
       await register(formData);
       navigate('/dashboard');
+      toast.success('Account created!');
     } catch (error) {
       const apiErrors = error.response?.data?.errors;
       if (apiErrors) {

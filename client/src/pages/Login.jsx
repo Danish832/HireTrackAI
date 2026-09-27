@@ -1,3 +1,4 @@
+import toast from 'react-hot-toast';
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -22,6 +23,7 @@ const Login = () => {
     try {
       await login(formData);
       navigate('/dashboard');
+      toast.success('Welcome back!');
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed');
     } finally {

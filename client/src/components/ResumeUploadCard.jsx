@@ -1,18 +1,16 @@
 import { useState, useRef } from 'react';
+import toast from 'react-hot-toast';
 import { uploadResume, deleteResume, reparseResume } from '../api/resumeApi';
 
 const ResumeUploadCard = ({ resumeData, onResumeUpdated }) => {
   const [uploading, setUploading] = useState(false);
-  const [error, setError] = useState('');
   const fileInputRef = useRef(null);
 
   const handleFileSelect = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    setError('');
     setUploading(true);
-
     const formData = new FormData();
     formData.append('resume', file);
 
@@ -20,30 +18,37 @@ const ResumeUploadCard = ({ resumeData, onResumeUpdated }) => {
       const res = await uploadResume(formData);
       onResumeUpdated(res.data.data);
       if (res.data.data.aiParseError) {
-        setError(`Uploaded, but AI parsing failed: ${res.data.data.aiParseError}`);
+        toast.error(`Uploaded, but AI parsing failed`);
+      } else {
+        toast.success('Resume uploaded and parsed');
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Upload failed');
+      toast.error(err.response?.data?.message || 'Upload failed');
     } finally {
       setUploading(false);
-      e.target.value = ''; // allow re-uploading the same file if needed
+      e.target.value = '';
     }
   };
 
   const handleDelete = async () => {
     if (!window.confirm('Delete your resume?')) return;
-    await deleteResume();
-    onResumeUpdated(null);
+    try {
+      await deleteResume();
+      onResumeUpdated(null);
+      toast.success('Resume deleted');
+    } catch (err) {
+      toast.error('Failed to delete resume');
+    }
   };
 
   const handleReparse = async () => {
-    setError('');
     setUploading(true);
     try {
       const res = await reparseResume();
       onResumeUpdated({ structuredData: res.data.data });
+      toast.success('Resume re-parsed');
     } catch (err) {
-      setError(err.response?.data?.message || 'Re-parsing failed');
+      toast.error(err.response?.data?.message || 'Re-parsing failed');
     } finally {
       setUploading(false);
     }
@@ -64,8 +69,6 @@ const ResumeUploadCard = ({ resumeData, onResumeUpdated }) => {
           </div>
         )}
       </div>
-
-      {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
 
       {!resumeData?.resumeUrl ? (
         <div className="text-center py-8 border-2 border-dashed border-gray-200 rounded-lg">

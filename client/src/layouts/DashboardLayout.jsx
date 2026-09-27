@@ -12,8 +12,8 @@ const DashboardLayout = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow-sm px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-6">
+      <nav className="bg-white shadow-sm px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="flex items-center gap-4 sm:gap-6 flex-wrap">
           <Link to="/dashboard" className="text-xl font-bold text-blue-600">
             HireTrack AI
           </Link>

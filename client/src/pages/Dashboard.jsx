@@ -1,4 +1,7 @@
+import SkeletonCard from '../components/SkeletonCard';
 import { useState, useEffect, useCallback } from 'react';
+import toast from 'react-hot-toast';
+
 import {
   getApplications,
   createApplication,
@@ -34,7 +37,7 @@ const Dashboard = () => {
       setApplications(res.data.data);
       setTotalPages(res.data.pagination.totalPages);
     } catch (error) {
-      console.error('Failed to fetch applications', error);
+      toast.error('Failed to load applications');
     } finally {
       setLoading(false);
     }
@@ -56,31 +59,39 @@ const Dashboard = () => {
 
   const handleDelete = async (id) => {
     if (!window.confirm('Delete this application?')) return;
-    await deleteApplication(id);
-    fetchApplications();
+    try {
+      await deleteApplication(id);
+      toast.success('Application deleted');
+      fetchApplications();
+    } catch (error) {
+      toast.error('Failed to delete application');
+    }
   };
 
   const handleFormSubmit = async (formData) => {
     if (editingApp) {
       await updateApplication(editingApp._id, formData);
+      toast.success('Application updated');
     } else {
       await createApplication(formData);
+      toast.success('Application created');
     }
     fetchApplications();
   };
+
 
   const handleGenerateScore = async (id) => {
     setScoringId(id);
     try {
       await generateMatchScore(id);
+      toast.success('Match score generated');
       fetchApplications();
     } catch (error) {
-      alert(error.response?.data?.message || 'Failed to generate match score');
+      toast.error(error.response?.data?.message || 'Failed to generate match score');
     } finally {
       setScoringId(null);
     }
   };
-
   return (
     <div>
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
@@ -113,9 +124,19 @@ const Dashboard = () => {
       </div>
 
       {loading ? (
-        <p className="text-gray-500">Loading applications...</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
+        </div>
       ) : applications.length === 0 ? (
-        <p className="text-gray-500">No applications found. Create your first one!</p>
+        <div className="text-center py-16 bg-white rounded-lg border border-dashed border-gray-200">
+          <p className="text-gray-500 mb-3">No applications yet</p>
+          <button
+            onClick={handleCreate}
+            className="text-blue-600 hover:underline text-sm"
+          >
+            Add your first application
+          </button>
+        </div>
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
